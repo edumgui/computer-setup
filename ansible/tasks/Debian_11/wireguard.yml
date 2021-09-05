@@ -26,7 +26,7 @@
     block: |
       [Desktop Entry]
       Name=wg-quick {{ item.1 | basename | replace('.conf','') }} {{ item.0 }}
-      Exec=sudo wg-quick {{ item.1 | basename | replace('.conf','') }} {{ item.0 }}
+      Exec=sudo wg-quick {{ item.0 }} {{ item.1 | basename | replace('.conf','') }}
       Terminal=false
       Type=Application
   with_nested:
