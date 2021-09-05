@@ -1,0 +1,14 @@
+---
+
+- ansible.builtin.import_role:
+    name: geerlingguy.docker
+  vars:
+    docker_package: "{{ tasks.docker.package }}"
+    docker_package_state: present
+    docker_service_state: started
+    docker_service_enabled: true
+    docker_install_compose: true
+    docker_compose_version: "{{ tasks.docker.compose.version }}"
+    docker_compose_path: "{{ tasks.docker.compose.path }}"
+    docker_users:
+      - "{{ username }}"

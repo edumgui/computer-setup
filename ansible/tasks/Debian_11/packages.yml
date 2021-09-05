@@ -1,0 +1,7 @@
+---
+
+- ansible.builtin.package:
+    name: "{{ base_package }}"
+  loop: "{{ tasks.packages.base }}"
+  loop_control:
+    loop_var: base_package

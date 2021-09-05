@@ -1,0 +1,17 @@
+---
+
+- ansible.builtin.include_tasks: "snap.yml"
+
+- name: Install Slack
+  community.general.snap:
+      name: slack
+      classic: yes
+
+- name: Create Slack Desktop launcher
+  ansible.builtin.copy:
+    src: /var/lib/snapd/desktop/applications/slack_slack.desktop
+    dest: "/home/{{ username }}/Desktop/"
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    mode: '755'
+    remote_src: yes

@@ -1,0 +1,5 @@
+- src: geerlingguy.docker
+  version: 4.1.0
+
+- src: gantsign.visual-studio-code-extensions
+  version: 2.4.0

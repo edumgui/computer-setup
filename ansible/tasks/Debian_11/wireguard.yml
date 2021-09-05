@@ -1,0 +1,34 @@
+---
+
+- name: Install Wireguard
+  ansible.builtin.package:
+    name: "{{ wireguard_required_package }}"
+  loop:
+    - resolvconf
+    - wireguard
+  loop_control:
+    loop_var: wireguard_required_package
+
+- name: Copy Wireguard profiles
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: "/etc/wireguard/"
+  with_fileglob:
+    - "../../templates/wireguard/*.conf"
+
+- name: Add Desktop launchers
+  ansible.builtin.blockinfile:
+    path: "/home/{{ username }}/Desktop/wg-quick_{{ item.1 | basename | replace('.conf','') }}_{{ item.0 }}.desktop"
+    create: yes
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    mode: '755'
+    block: |
+      [Desktop Entry]
+      Name=wg-quick {{ item.1 | basename | replace('.conf','') }} {{ item.0 }}
+      Exec=sudo wg-quick {{ item.1 | basename | replace('.conf','') }} {{ item.0 }}
+      Terminal=false
+      Type=Application
+  with_nested:
+    - [ 'up', 'down' ]
+    - "{{ lookup('fileglob', '../../templates/wireguard/*.conf').split(',') }}"

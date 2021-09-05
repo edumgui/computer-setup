@@ -1,0 +1,17 @@
+---
+
+- ansible.builtin.include_tasks: "snap.yml"
+
+- name: Install postman
+  community.general.snap:
+      name: postman
+      classic: yes
+
+- name: Create Postman Desktop launcher
+  ansible.builtin.copy:
+    src: /var/lib/snapd/desktop/applications/postman_postman.desktop
+    dest: "/home/{{ username }}/Desktop/"
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    mode: '755'
+    remote_src: yes

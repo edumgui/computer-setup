@@ -1,0 +1,24 @@
+- hosts: localhost
+  become: true
+  become_method: sudo
+  gather_facts: yes
+  tasks:
+    - name: OS details
+      ansible.builtin.debug:
+        msg: "{{ ansible_distribution }} {{ ansible_distribution_version }}"
+
+    - name: Check OS tasks
+      ansible.builtin.stat:
+        path: "tasks/{{ ansible_distribution }}_{{ ansible_distribution_version }}"
+      register: os_tasks
+
+    - name: Fail if there are no tasks for such distribution
+      ansible.builtin.fail:
+        msg: "There are no tasks for {{ ansible_distribution }} {{ ansible_distribution_version }}"
+      when: not os_tasks.stat.exists
+
+    - ansible.builtin.include_tasks: "tasks/{{ ansible_distribution }}_{{ ansible_distribution_version }}/{{ task.key }}.yml"
+      when: task.value.run == true
+      loop: "{{ lookup('dict', tasks) }}"
+      loop_control:
+        loop_var: task

@@ -1,0 +1,26 @@
+---
+
+- ansible.builtin.include_tasks: "snap.yml"
+
+- name: Install VSCode
+  community.general.snap:
+      name: code
+      classic: yes
+
+- name: Create VSCode Desktop launcher
+  ansible.builtin.copy:
+    src: /var/lib/snapd/desktop/applications/code_code.desktop
+    dest: "/home/{{ username }}/Desktop/"
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    mode: '755'
+    remote_src: yes
+
+- name: Install VScode extensions
+  ansible.builtin.include_role:
+    name: gantsign.visual-studio-code-extensions
+  vars:
+    users:
+      - username: "{{ username }}"
+        visual_studio_code_extensions: "{{ tasks.vscode.extensions }}"
+

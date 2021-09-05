@@ -1,0 +1,35 @@
+---
+
+- name: Check if AWS CLI is installed
+  ansible.builtin.command: aws --version
+  register: awscli_installed_version
+  become: no
+  ignore_errors: yes
+  changed_when: awscli_installed_version.rc != 0
+
+- ansible.builtin.debug:
+    msg: "AWS CLI installed version: {{ awscli_installed_version.stdout }}"
+  when:
+    - awscli_installed_version.rc == 0
+
+- block:
+    - name: Download awscli
+      ansible.builtin.get_url:
+        url: 'https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip'
+        dest: /tmp/awscliv2.zip
+
+    - name: Unzip and install awscli
+      ansible.builtin.shell: unzip /tmp/awscliv2.zip && ./tmp/aws/install
+  always:
+    - name: Remove downloaded and created files
+      ansible.builtin.file:
+        path: "{{ r_awscli_remove_loop }}"
+        state: absent
+      loop:
+        - /tmp/awscliv2.zip
+        - /tmp/aws
+      loop_control:
+        loop_var: r_awscli_remove_loop
+  when:
+    - awscli_installed_version.rc != 0
+

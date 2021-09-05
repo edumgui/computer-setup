@@ -1,0 +1,36 @@
+---
+
+- name: "Check if AWS CLI is installed"
+  ansible.builtin.command: aws --version
+  register: awscli_installed_version
+  become: no
+  ignore_errors: yes
+  changed_when: awscli_installed_version.rc != 0
+
+- ansible.builtin.package:
+    name: snapd
+
+- name: Install snap store
+  community.general.snap:
+      name: "{{ snap_store_package }}"
+  loop:
+    - core
+    - snap-store
+  loop_control:
+    loop_var: snap_store_package
+
+- name: Check if refresh timer is already set
+  ansible.builtin.command: snap refresh --time
+  register: snap_refresh_timer
+  changed_when: snap_refresh_timer.rc != 0
+
+- name: Set snap refresh window
+  ansible.builtin.command: "snap set system refresh.timer={{ tasks.snap.refresh_timer }}"
+  when: tasks.snap.refresh_timer not in snap_refresh_timer.stdout
+
+- name: Add snap bin to path
+  ansible.builtin.blockinfile:
+    path: "/home/{{ username }}/.bashrc"
+    marker: "### <!-- {mark} snap bin -->"
+    block: |
+      export PATH="${PATH}:/snap/bin"

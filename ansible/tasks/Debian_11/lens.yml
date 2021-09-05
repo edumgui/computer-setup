@@ -1,0 +1,17 @@
+---
+
+- ansible.builtin.include_tasks: "snap.yml"
+
+- name: Install Lens
+  community.general.snap:
+      name: kontena-lens
+      classic: yes
+
+- name: Create Lens Desktop launcher
+  ansible.builtin.copy:
+    src: /var/lib/snapd/desktop/applications/kontena-lens_kontena-lens.desktop
+    dest: "/home/{{ username }}/Desktop/"
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    mode: '755'
+    remote_src: yes

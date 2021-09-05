@@ -1,0 +1,44 @@
+---
+
+- name: Install dependencies
+  ansible.builtin.package:
+    name: "{{ asdf_dependency }}"
+  loop:
+    - curl
+    - git
+  loop_control:
+    loop_var: asdf_dependency
+
+- name: Download asdf
+  ansible.builtin.git:
+    repo: 'https://github.com/asdf-vm/asdf.git'
+    dest: "/home/{{ username }}/.asdf"
+    version: "{{ tasks.asdf.version }}"
+  
+- name: Fix permissions
+  ansible.builtin.file:
+    path:  "/home/{{ username }}/.asdf"
+    owner: "{{ username }}"
+    group: "{{ username }}"
+
+- name: Add to bashrc
+  ansible.builtin.blockinfile:
+    path: "/home/{{ username }}/.bashrc"
+    marker: "### <!-- {mark} asdf tool -->"
+    block: |
+      . $HOME/.asdf/asdf.sh
+      . $HOME/.asdf/completions/asdf.bash
+
+- name: List installed plugins
+  ansible.builtin.command: asdf plugin-list
+  become: false
+  register: asdf_plugin_list
+  changed_when: false
+
+- name: Install plugins
+  ansible.builtin.command: "asdf plugin-add {{ asdf_plugin.name }} {{ asdf_plugin.url }}"
+  when: asdf_plugin.name not in asdf_plugin_list.stdout
+  become: false
+  loop: "{{ tasks.asdf.plugins }}"
+  loop_control:
+    loop_var: asdf_plugin
