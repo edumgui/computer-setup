@@ -35,10 +35,19 @@
   register: asdf_plugin_list
   changed_when: false
 
-- name: Install plugins
-  ansible.builtin.command: "asdf plugin-add {{ asdf_plugin.name }} {{ asdf_plugin.url }}"
-  when: asdf_plugin.name not in asdf_plugin_list.stdout
-  become: false
-  loop: "{{ tasks.asdf.plugins }}"
-  loop_control:
-    loop_var: asdf_plugin
+- block:
+  - name: Add plugins repositories
+    ansible.builtin.command: "asdf plugin-add {{ asdf_plugin.name }} {{ asdf_plugin.url }}"
+    when: asdf_plugin.name not in asdf_plugin_list.stdout
+    become: false
+    loop: "{{ tasks.asdf.plugins }}"
+    loop_control:
+      loop_var: asdf_plugin
+
+  - name: Install plugins latest version
+    ansible.builtin.command: "asdf {{ item.0 }} {{ item.1.name }} latest"
+    when: item.1.name not in asdf_plugin_list.stdout
+    become: false
+    with_nested:
+      - [ 'install', 'global' ]
+      - "{{ tasks.asdf.plugins }}"
